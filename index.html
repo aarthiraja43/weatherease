@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARP WEATHERS</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+    body, html {
+      height: 100%;
+      width: 100%;
+      color: white;
+    }
+    video.bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+    .container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0,0,0,0.5);
+    }
+    h1 {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-align: center;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+    }
+    .box {
+      background: rgba(255,255,255,0.85);
+      color: black;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+    #error {
+      margin-top: 10px;
+      color: red;
+    }
+    #weatherResult {
+      margin-top: 20px;
+    }
+    #weatherResult img {
+      margin: auto;
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 2rem; }
+      .box { padding: 15px; }
+      input, button { font-size: 0.9rem; }
+    }
+  </style>
+      <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+    <h1 style="color:white; text-align:center; ">
+  <b>WEATHEREASE</b>
+</h1>
+  <marquee style="color: whitesmoke; font-style: italic;">
+    This website provide information about current weather conditions like temperature.
+    This website offers, such as real-time updates like cloudy, hot, cold, rainy about cities in Tamilnadu.
+  </marquee>
+   
+  <!-- Background video -->
+  <video autoplay muted loop class="bg-video" id="bgVideo">
+    <source src="videos/clear.mp4" type="video/mp4" />
+  </video>
+
+  <div class="container">
+    <h1>LIVE WEATHEREASE</h1>
+
+    <div class="box">
+      <input type="text" id="cityInput" placeholder="Enter your city" />
+      <button onclick="fetchWeather()">Submit</button>
+      <p id="error"></p>
+      <div id="weatherResult" style="display:none;">
+        <img id="weatherIcon" alt="Weather Icon" />
+        <h2 id="temperature"></h2>
+        <p id="description"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = "24ad6de8b5056def5b6fe148d5efe5cd"; // Replace with OpenWeatherMap API key
+
+    async function fetchWeather() {
+      const city = document.getElementById("cityInput").value;
+      const errorDiv = document.getElementById("error");
+      const resultDiv = document.getElementById("weatherResult");
+
+      if (!city) return;
+
+      try {
+        const response = await fetch(
+  `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+);
+
+        const data = await response.json();
+
+        if (data.cod === 200) {
+          const temp = data.main.temp;
+          const desc = data.weather[0].description;
+          const main = data.weather[0].main.toLowerCase();
+          const icon = data.weather[0].icon;
+
+          document.getElementById("temperature").innerText = `${temp} °C`;
+          document.getElementById("description").innerText = desc;
+          document.getElementById("weatherIcon").src =
+  `https://openweathermap.org/img/wn/${icon}@2x.png`;
+
+          resultDiv.style.display = "block";
+          errorDiv.innerText = "";
+
+          setBackgroundVideo(main, temp);
+        } else {
+          errorDiv.innerText = "City not found!";
+          resultDiv.style.display = "none";
+        }
+      } catch (err) {
+        errorDiv.innerText = "Failed to fetch weather!";
+        resultDiv.style.display = "none";
+      }
+    }
+
+    function setBackgroundVideo(main, temp) {
+      const video = document.getElementById("bgVideo");
+      if (main.includes("rain")) {
+        video.src = "videos/rain.mp4";
+      } else if (main.includes("cloud")) {
+        video.src = "videos/cloud.mp4";
+      } else if (temp <= 15) {
+        video.src = "videos/cold.mp4";
+      } else if (temp >= 30) {
+        video.src = "videos/hot.mp4";
+      } else {
+        video.src = "videos/clear.mp4";
+      }
+      video.load();
+      video.play();
+    }
+  </script>
+</body>
+</html>
